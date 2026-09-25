@@ -1,0 +1,23 @@
+{
+  "owner": "YOUR_USERNAME",
+  "organization": null,
+  "settings": {
+    "workers": 4,
+    "retries": 4,
+    "backoff_seconds": 1.5,
+    "request_timeout": 30,
+    "proxy": null
+  },
+  "repositories": [
+    {
+      "name": "agent-project-01",
+      "description": "AI agent project",
+      "private": false
+    },
+    {
+      "name": "agent-project-02",
+      "description": "Automation project",
+      "private": true
+    }
+  ]
+}
