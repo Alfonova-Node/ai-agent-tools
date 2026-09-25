@@ -1,73 +1,74 @@
 # AI Agent Tools
 
-A small Python toolkit for legitimate GitHub automation and AI-agent workflows.
+Practical Python toolkit for managing GitHub repositories you are authorized to manage.
 
 ## Features
 
-- Create multiple repositories under a GitHub account or organization you control.
-- Configure repository visibility and initialization.
-- Read repository configuration from JSON/YAML-like data.
-- Dry-run mode before making changes.
-- Optional per-repository descriptions.
-- Uses the official GitHub REST API.
+- Local Web UI
+- Parallel repository operations with configurable workers
+- Retry with exponential backoff and Retry-After handling
+- Console and file logging
+- Optional single HTTP(S) proxy
+- Dry-run mode
+- Existing-repository detection
+- JSON job summaries
 
-> This project is intended for managing repositories you legitimately control. It does not create or automate large numbers of GitHub user accounts, bypass email verification, or evade GitHub anti-abuse controls.
+GitHub's REST API supports repository creation for authenticated users and organizations when the account/token has sufficient permissions. GitHub also documents rate limits and API best practices. citeturn0search7turn0search8
 
-## Quick start
+> This project manages repositories, not GitHub user accounts. It does not automate account farming, bypass email verification, rotate proxies to evade rate limits, or circumvent anti-abuse controls.
 
-### 1. Install
+## Install
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    cp .env.example .env
 
-### 2. Configure
+Set GITHUB_TOKEN in .env. Prefer a fine-grained token with only the permissions required for your workflow. citeturn0search7
 
-Copy `.env.example` to `.env` and set a GitHub token with the minimum permissions required for the repositories you manage.
+## CLI
 
-```bash
-cp .env.example .env
-```
+Dry run:
 
-### 3. Define repositories
+    python github_repo_manager.py --config repos.json --dry-run
 
-Edit `repos.json`:
+Real run:
 
-```json
-{
-  "owner": "YOUR_USERNAME",
-  "organization": null,
-  "repositories": [
-    {
-      "name": "agent-project-01",
-      "description": "AI agent project",
-      "private": false
-    },
-    {
-      "name": "agent-project-02",
-      "description": "Automation project",
-      "private": true
-    }
-  ]
-}
-```
+    python github_repo_manager.py --config repos.json --workers 4 --retries 4
 
-### 4. Dry run
+Optional single proxy:
 
-```bash
-python github_repo_manager.py --config repos.json --dry-run
-```
+    python github_repo_manager.py --proxy http://127.0.0.1:8080
 
-### 5. Create repositories
+The proxy is a normal transport option. Do not use proxy rotation to evade GitHub limits or abuse controls.
 
-```bash
-python github_repo_manager.py --config repos.json
-```
+## Web UI
 
-The script skips repositories that already exist.
+Start it with:
 
-## Notes
+    ./run_web.sh
 
-Use a fine-grained GitHub token and grant only the repository/account permissions needed for your own workflow. Never commit `.env` or a real token.
+Open http://127.0.0.1:8080.
+
+The UI accepts repository JSON, worker count, retry count, optional proxy, and dry-run mode. The GitHub token stays in the server environment and is not entered into the browser.
+
+For a VPS, keep the UI on localhost and expose it through an authenticated reverse proxy/TLS layer rather than exposing Flask's development server directly.
+
+## Logging
+
+Default file: logs/github-manager.log
+
+Set LOG_LEVEL and LOG_FILE in .env to change logging.
+
+## Configuration
+
+See config.example.json for workers, retries, backoff, timeout, proxy and repository settings.
+
+The tool parallelizes independent repository operations only. It does not parallelize conflicting file-content writes; GitHub documents that concurrent content updates can conflict. citeturn0search4
+
+## Security
+
+- Never commit .env or real tokens.
+- Keep concurrency moderate because GitHub API usage is rate-limited. citeturn0search8
+- Use a fine-grained token with minimum permissions.
+- Keep the Web UI behind authentication if exposed beyond localhost.
